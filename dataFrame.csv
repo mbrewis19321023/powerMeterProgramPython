@@ -1,0 +1,25 @@
+Hour,Sum Week,Sum Sat,Sum Sun,Wint Week,Wint Sat,Wint Sun
+0,O,O,O,O,O,O
+1,O,O,O,O,O,O
+2,O,O,O,O,O,O
+3,O,O,O,O,O,O
+4,O,O,O,O,O,O
+5,O,O,O,S,O,O
+6,S,O,O,S,S,O
+7,S,S,O,P,S,O
+8,P,S,O,P,S,O
+9,P,S,O,P,S,O
+10,P,S,O,P,S,O
+11,P,S,O,P,O,O
+12,P,O,O,S,O,O
+13,S,O,O,S,O,O
+14,S,O,O,S,O,O
+15,S,O,O,S,O,O
+16,S,O,O,S,O,O
+17,S,O,O,P,S,O
+18,P,S,O,P,S,O
+19,P,S,O,P,O,O
+20,P,O,O,S,O,O
+21,S,O,O,O,O,O
+22,O,O,O,O,O,O
+23,O,O,O,O,O,O
