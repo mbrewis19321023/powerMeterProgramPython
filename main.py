@@ -36,7 +36,7 @@ def changeState(btn, nbr, column, row):
 def selectIn():
     global rootloc
     filename = filedialog.askopenfilename(initialdir="/", title="Select File",
-                                          filetypes=(("csv file ", "*.csv"),("all files", "*.*")))
+                                          filetypes=(("csv file ", "*.csv"), ("all files", "*.*")))
     rootloc = filename
     return
 
@@ -47,113 +47,112 @@ def exit():
 
 
 def genOutput():
-
-    for x, item in enumerate(monthList):
-        dfTotals.loc[x] = [item] + [0] + [0] + [0] + [0]
-
-    maxVA = 0
-    up = 2
-    float1 = 0
-    startFlag = 0
-    csvFile = open(rootloc)
-    dateSplit = [2019,1,1]
-    lines = csvFile.readlines()
-    for p in lines:
-        p1 = p.replace('"', '')
-        p2 = p1.split(',')
-
-        if (p.find('Date') != -1) and (p.find('Total VA') != -1):
-            startFlag = 1
-
-        if startFlag == 1:
-            try:
-                dateI = p2.index('Date')
-                totalI = p2.index('Total VA')
-                startI = p2.index('Start')
-                endI = p2.index('End')
-                importI = p2.index('Import W')
-            except ValueError:
-                number = -1
-                for x, item in enumerate(monthList):
-                    if p.find(monthList[x]) != -1:
-                        number = p.find(monthList[x])
-
-                if number != -1:
-                    up = up + 1
-                    if monthList[dateSplit[1] - 1] != p2[dateI].split('-')[1]:
-                        maxVA = 0
-                    else:
-                        pass
-                    dateSplit = p2[dateI].split('-')
-                    dateInteger = monthList.index(dateSplit[1]) + 1
-                    dateSplit[1] = dateInteger
-                    dateSplit[2] = '20' + dateSplit[2]
-                    startHour = int(p2[startI].split(":")[0])
-                    day = datetime.datetime(int(dateSplit[2]), dateSplit[1], int(dateSplit[0])).weekday()
-                    float1 += float(p2[importI])
-                    if (float(p2[totalI]) > maxVA):
-                        dfTotals.loc[(dateSplit[1] - 1), 'Max kVA'] = float(p2[totalI])
-                        maxVA = float(p2[totalI])
-                    if (dateInteger < 4) or (dateInteger > 8):
-                        if (day < 5):
-                            if (dfF.iloc[startHour]['Sum Week'] == 'O'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Sum Week'] == 'S'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Sum Week'] == 'P'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-                        elif (day == 5):
-                            if (dfF.iloc[startHour]['Sum Sat'] == 'O'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Sum Sat'] == 'S'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Sum Sat'] == 'P'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-                        elif (day == 6):
-                            if (dfF.iloc[startHour]['Sum Sun'] == 'O'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Sum Sun'] == 'S'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Sum Sun'] == 'P'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-                    elif (dateInteger > 3) and (dateInteger < 9):
-                        if (day < 5):
-                            if (dfF.iloc[startHour]['Wint Week'] == 'O'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Wint Week'] == 'S'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Wint Week'] == 'P'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-                        elif (day == 5):
-                            if (dfF.iloc[startHour]['Wint Sat'] == 'O'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Wint Sat'] == 'S'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Wint Sat'] == 'P'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-                        elif (day == 6):
-                            if (dfF.iloc[startHour]['Wint Sun'] == 'O'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Wint Sun'] == 'S'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-                            elif (dfF.iloc[startHour]['Wint Sun'] == 'P'):
-                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-
-    for x, row in dfTotals.iterrows():
-        dfTotals.iloc[x]["Off-peak"] = "{: .2f}".format(dfTotals.iloc[x]["Off-peak"])
-        dfTotals.iloc[x]["Peak"] = "{: .2f}".format(dfTotals.iloc[x]["Peak"])
-        dfTotals.iloc[x]["Standard"] = "{: .2f}".format(dfTotals.iloc[x]["Standard"])
-        dfTotals.iloc[x]["'Max kVA'"] = "{: .2f}".format(dfTotals.iloc[x]["Max kVA"])
-
-    file = asksaveasfile(initialdir="/", title="Select output location",
-                                          filetypes=(("csv file ", "*.csv"),("all files", "*.*")), defaultextension = ".csv")
-
-    dfTotalsString = dfTotals.round(1).astype(str)
-    dfTotalsString['Off-peak'] += " kWh"
-    dfTotalsString['Standard'] += " kWh"
-    dfTotalsString['Peak'] += " kWh"
-    dfTotalsString['Max kVA'] += " kVA"
-    dfTotalsString.to_csv(file, index=False)
+    # for x, item in enumerate(monthList):
+    #     dfTotals.loc[x] = [item] + [0] + [0] + [0] + [0]
+    #
+    # maxVA = 0
+    # up = 2
+    # float1 = 0
+    # startFlag = 0
+    # csvFile = open(rootloc)
+    # dateSplit = [2019,1,1]
+    # lines = csvFile.readlines()
+    # for p in lines:
+    #     p1 = p.replace('"', '')
+    #     p2 = p1.split(',')
+    #
+    #     if (p.find('Date') != -1) and (p.find('Total VA') != -1):
+    #         startFlag = 1
+    #
+    #     if startFlag == 1:
+    #         try:
+    #             dateI = p2.index('Date')
+    #             totalI = p2.index('Total VA')
+    #             startI = p2.index('Start')
+    #             endI = p2.index('End')
+    #             importI = p2.index('Import W')
+    #         except ValueError:
+    #             number = -1
+    #             for x, item in enumerate(monthList):
+    #                 if p.find(monthList[x]) != -1:
+    #                     number = p.find(monthList[x])
+    #
+    #             if number != -1:
+    #                 up = up + 1
+    #                 if monthList[dateSplit[1] - 1] != p2[dateI].split('-')[1]:
+    #                     maxVA = 0
+    #                 else:
+    #                     pass
+    #                 dateSplit = p2[dateI].split('-')
+    #                 dateInteger = monthList.index(dateSplit[1]) + 1
+    #                 dateSplit[1] = dateInteger
+    #                 dateSplit[2] = '20' + dateSplit[2]
+    #                 startHour = int(p2[startI].split(":")[0])
+    #                 day = datetime.datetime(int(dateSplit[2]), dateSplit[1], int(dateSplit[0])).weekday()
+    #                 float1 += float(p2[importI])
+    #                 if (float(p2[totalI]) > maxVA):
+    #                     dfTotals.loc[(dateSplit[1] - 1), 'Max kVA'] = float(p2[totalI])
+    #                     maxVA = float(p2[totalI])
+    #                 if (dateInteger < 4) or (dateInteger > 8):
+    #                     if (day < 5):
+    #                         if (dfF.iloc[startHour]['Sum Week'] == 'O'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Sum Week'] == 'S'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Sum Week'] == 'P'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+    #                     elif (day == 5):
+    #                         if (dfF.iloc[startHour]['Sum Sat'] == 'O'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Sum Sat'] == 'S'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Sum Sat'] == 'P'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+    #                     elif (day == 6):
+    #                         if (dfF.iloc[startHour]['Sum Sun'] == 'O'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Sum Sun'] == 'S'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Sum Sun'] == 'P'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+    #                 elif (dateInteger > 3) and (dateInteger < 9):
+    #                     if (day < 5):
+    #                         if (dfF.iloc[startHour]['Wint Week'] == 'O'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Wint Week'] == 'S'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Wint Week'] == 'P'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+    #                     elif (day == 5):
+    #                         if (dfF.iloc[startHour]['Wint Sat'] == 'O'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Wint Sat'] == 'S'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Wint Sat'] == 'P'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+    #                     elif (day == 6):
+    #                         if (dfF.iloc[startHour]['Wint Sun'] == 'O'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Wint Sun'] == 'S'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+    #                         elif (dfF.iloc[startHour]['Wint Sun'] == 'P'):
+    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+    #
+    # for x, row in dfTotals.iterrows():
+    #     dfTotals.iloc[x]["Off-peak"] = "{: .2f}".format(dfTotals.iloc[x]["Off-peak"])
+    #     dfTotals.iloc[x]["Peak"] = "{: .2f}".format(dfTotals.iloc[x]["Peak"])
+    #     dfTotals.iloc[x]["Standard"] = "{: .2f}".format(dfTotals.iloc[x]["Standard"])
+    #     dfTotals.iloc[x]["'Max kVA'"] = "{: .2f}".format(dfTotals.iloc[x]["Max kVA"])
+    #
+    # file = asksaveasfile(initialdir="/", title="Select output location",
+    #                                       filetypes=(("csv file ", "*.csv"),("all files", "*.*")), defaultextension = ".csv")
+    #
+    # dfTotalsString = dfTotals.round(1).astype(str)
+    # dfTotalsString['Off-peak'] += " kWh"
+    # dfTotalsString['Standard'] += " kWh"
+    # dfTotalsString['Peak'] += " kWh"
+    # dfTotalsString['Max kVA'] += " kVA"
+    # dfTotalsString.to_csv(file, index=False)
     return
 
 
@@ -310,16 +309,47 @@ for i in range(6):
 canvas = tk.Canvas(bg="#F0F0F0", width=50)
 canvas.grid(column=11, columnspan=5, row=2, rowspan=21)
 
-inputBt = tk.Button(root, text="1. Select Input", bg="Grey", command=selectIn, width = 16)
-inputBt.grid(column=18, columnspan = 3, row=11, rowspan=2)
+inputBt = tk.Button(root, text="1. Select Input", bg="Grey", command=selectIn, width=16)
+inputBt.grid(column=16, columnspan=3, row=11, rowspan=2)
 
-confirmSchedule = tk.Button(root, text="2. Confirm Schedule", bg="Grey", command=lambda: confirmSched(btn), width = 16)
-confirmSchedule.grid(column=18, columnspan = 3,  row=13, rowspan=2)
+confirmSchedule = tk.Button(root, text="2. Confirm Schedule", bg="Grey", command=lambda: confirmSched(btn), width=16)
+confirmSchedule.grid(column=16, columnspan=3, row=13, rowspan=2)
 
-outputBt = tk.Button(root, text="3. Generate Output", bg="Grey", command=genOutput, width = 16)
-outputBt.grid(column=18, columnspan = 3, row=15, rowspan=2)
+outputBt = tk.Button(root, text="3. Generate Output", bg="Grey", command=genOutput, width=16)
+outputBt.grid(column=16, columnspan=3, row=15, rowspan=2)
 
-quitBt  = tk.Button(root, text="4. Exit", bg="Grey", command=exit, width = 16)
-quitBt.grid(column=18, columnspan = 3,  row=17, rowspan=2)
+quitBt = tk.Button(root, text="4. Exit", bg="Grey", command=exit, width=16)
+quitBt.grid(column=16, columnspan=3, row=17, rowspan=2)
 
+fill1 = tk.Label(root, text="      ")
+fill1.grid(column=14, row=0)
+
+winterT = tk.Label(root, text="Winter Tariffs")
+winterT.grid(column=16, row=0)
+
+fill1 = tk.Label(root, text="      ")
+fill1.grid(column=17, row=0)
+
+summerT = tk.Label(root, text="Summer Tariffs")
+summerT.grid(column=18, row=0)
+
+peak = tk.Label(root, text="Peak")
+peak.grid(column=15, row=1)
+off = tk.Label(root, text="Off")
+off.grid(column=15, row=2)
+standard = tk.Label(root, text="Standard")
+standard.grid(column=15, row=3)
+
+winterP = tk.Entry(root)
+winterP.grid(column=16, row=1)
+winterO = tk.Entry(root)
+winterO.grid(column=16, row=2)
+winterS = tk.Entry(root)
+winterS.grid(column=16, row=3)
+summerP = tk.Entry(root)
+summerP.grid(column=18, row=1)
+summerO = tk.Entry(root)
+summerO.grid(column=18, row=2)
+summerS = tk.Entry(root)
+summerS.grid(column=18, row=3)
 root.mainloop()
