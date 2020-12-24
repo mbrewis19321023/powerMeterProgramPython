@@ -22,6 +22,8 @@ btn = []
 def func(name):
     print(name)
 
+def test():
+    print(winterP.get())
 
 def changeState(btn, nbr, column, row):
     if btn[nbr]['text'] == 'S':
@@ -255,6 +257,38 @@ lbl22.grid(column=0, row=24)
 lbl23 = tk.Label(root, text="23")
 lbl23.grid(column=0, row=25)
 
+fill1 = tk.Label(root, text="      ")
+fill1.grid(column=14, row=0)
+
+winterT = tk.Label(root, text="Winter Tariffs")
+winterT.grid(column=16, row=0)
+
+fill1 = tk.Label(root, text="      ")
+fill1.grid(column=17, row=0)
+
+summerT = tk.Label(root, text="Summer Tariffs")
+summerT.grid(column=18, row=0)
+
+peak = tk.Label(root, text="Peak")
+peak.grid(column=15, row=1)
+off = tk.Label(root, text="Off")
+off.grid(column=15, row=2)
+standard = tk.Label(root, text="Standard")
+standard.grid(column=15, row=3)
+
+winterP = tk.Entry(root)
+winterP.grid(column=16, row=1)
+winterO = tk.Entry(root)
+winterO.grid(column=16, row=2)
+winterS = tk.Entry(root)
+winterS.grid(column=16, row=3)
+summerP = tk.Entry(root)
+summerP.grid(column=18, row=1)
+summerO = tk.Entry(root)
+summerO.grid(column=18, row=2)
+summerS = tk.Entry(root)
+summerS.grid(column=18, row=3)
+
 stringT = 'O'
 stringC = 'Green'
 number = 0
@@ -321,35 +355,7 @@ outputBt.grid(column=16, columnspan=3, row=15, rowspan=2)
 quitBt = tk.Button(root, text="4. Exit", bg="Grey", command=exit, width=16)
 quitBt.grid(column=16, columnspan=3, row=17, rowspan=2)
 
-fill1 = tk.Label(root, text="      ")
-fill1.grid(column=14, row=0)
+testBt = tk.Button(root, text="5. Text", bg="Grey", command=test, width=16)
+testBt.grid(column=16, columnspan=3, row=19, rowspan=2)
 
-winterT = tk.Label(root, text="Winter Tariffs")
-winterT.grid(column=16, row=0)
-
-fill1 = tk.Label(root, text="      ")
-fill1.grid(column=17, row=0)
-
-summerT = tk.Label(root, text="Summer Tariffs")
-summerT.grid(column=18, row=0)
-
-peak = tk.Label(root, text="Peak")
-peak.grid(column=15, row=1)
-off = tk.Label(root, text="Off")
-off.grid(column=15, row=2)
-standard = tk.Label(root, text="Standard")
-standard.grid(column=15, row=3)
-
-winterP = tk.Entry(root)
-winterP.grid(column=16, row=1)
-winterO = tk.Entry(root)
-winterO.grid(column=16, row=2)
-winterS = tk.Entry(root)
-winterS.grid(column=16, row=3)
-summerP = tk.Entry(root)
-summerP.grid(column=18, row=1)
-summerO = tk.Entry(root)
-summerO.grid(column=18, row=2)
-summerS = tk.Entry(root)
-summerS.grid(column=18, row=3)
 root.mainloop()
