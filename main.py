@@ -23,7 +23,14 @@ def func(name):
     print(name)
 
 def test():
-    print(winterP.get())
+    wp =float(winterP.get())
+    wo =float(winterO.get())
+    ws =float(winterS.get())
+    sp =float(summerP.get())
+    so =float(summerO.get())
+    ss =float(summerS.get())
+    print(wp + wo + ws + sp + so + ss)
+
 
 def changeState(btn, nbr, column, row):
     if btn[nbr]['text'] == 'S':
@@ -277,16 +284,22 @@ standard = tk.Label(root, text="Standard")
 standard.grid(column=15, row=3)
 
 winterP = tk.Entry(root)
+winterP.insert(1,"2.0")
 winterP.grid(column=16, row=1)
 winterO = tk.Entry(root)
+winterO.insert(1,"2.0")
 winterO.grid(column=16, row=2)
 winterS = tk.Entry(root)
+winterS.insert(1,"2.0")
 winterS.grid(column=16, row=3)
 summerP = tk.Entry(root)
+summerP.insert(1,"2.0")
 summerP.grid(column=18, row=1)
 summerO = tk.Entry(root)
+summerO.insert(1,"2.0")
 summerO.grid(column=18, row=2)
 summerS = tk.Entry(root)
+summerS.insert(1,"2.0")
 summerS.grid(column=18, row=3)
 
 stringT = 'O'

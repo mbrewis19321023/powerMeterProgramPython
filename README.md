@@ -7,3 +7,5 @@ v2.1 - This is where we added the field to make the tariffs available, they are 
 
 v2.2 - This is where we were able to implement a button that is used to get the information of the field
 
+v2.3 - This is the version where the fields now have the default set to 2.0 and the function that tests them works sort of. It adds the values for now. 
+
