@@ -9,3 +9,8 @@ v2.2 - This is where we were able to implement a button that is used to get the 
 
 v2.3 - This is the version where the fields now have the default set to 2.0 and the function that tests them works sort of. It adds the values for now. 
 
+v2.4 - In this version, we created the excel spreadsheet in a rough format. FOr future versions:
+-add a three extra tariffs in gui: Max demand, standard?, winter?
+-add the full package to the excel output file
+-add a loading bar when generating results
+

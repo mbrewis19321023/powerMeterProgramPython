@@ -1,12 +1,20 @@
+import os
 import sys
+from openpyxl.styles import NamedStyle, Font, Border, Side
 import tkinter as tk
 from tkinter import filedialog, Text
 import tkinter.font as font
+from openpyxl.utils.dataframe import dataframe_to_rows
 from tkinter.filedialog import asksaveasfile
 
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill
+from openpyxl.styles import NamedStyle, Font, Border, Side
+import pandas as pd
 import pandas as pd
 import datetime
 from openpyxl import Workbook
+from openpyxl.styles import Font
 
 root = tk.Tk()
 root.title('Power Meter Consumption Calculator (GSFA)')
@@ -18,22 +26,151 @@ monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct
 dfTotals = pd.DataFrame(columns=['Month', 'Off-peak', 'Standard', 'Peak', 'Max kVA'])
 btn = []
 
+# This is the font for the excel main headings
+boldMain = NamedStyle(name="boldMain")
+boldMain.font = Font(bold=False, size=11, name="Calibri")
+
+
+# This is for the plain text
+
 
 def func(name):
     print(name)
 
-def test():
-    wp =float(winterP.get())
-    wo =float(winterO.get())
-    ws =float(winterS.get())
-    sp =float(summerP.get())
-    so =float(summerO.get())
-    ss =float(summerS.get())
-    print(wp + wo + ws + sp + so + ss)
+
+def createExcel(titleOfProject, df, fileLoc):
+    wp = float(winterP.get())
+    wo = float(winterS.get())
+    ws = float(winterO.get())
+    sp = float(summerP.get())
+    so = float(summerS.get())
+    ss = float(summerO.get())
+
+    monthDict = {'Jan': 'January',
+                 'Feb': 'February',
+                 'Mar': 'March',
+                 'Apr': 'April',
+                 'May': 'May',
+                 'Jun': 'June',
+                 'Jul': 'July',
+                 'Aug': 'August',
+                 'Sep': 'September',
+                 'Oct': 'October',
+                 'Nov': 'November',
+                 'Dec': 'December'}
+
+    lowSeason = {'Jan': 'January',
+                 'Feb': 'February',
+                 'Mar': 'March',
+                 'Sep': 'September',
+                 'Oct': 'October',
+                 'Nov': 'November',
+                 'Dec': 'December'}
+
+    highSeason = {'Apr': 'April',
+                  'May': 'May',
+                  'Jun': 'June',
+                  'Jul': 'July',
+                  'Aug': 'August'}
+
+    numberOfRowsPerMonth: int = 11  # This is how many spaces will be skipped per month in excel
+
+    # Red - FF0000
+    # Green - 4AE00D
+    # Here is just where we import a dataframe
+    highlight = NamedStyle(name="highlight")
+    highlight.font = Font(bold=True, size=10, name="Impact")
+    bd = Side(style='thick', color="000000")
+    highlight.border = Border(left=bd, top=bd, right=bd, bottom=bd)
+
+    wb = Workbook()
+    wb.add_named_style(highlight)
+    # print(wb.active.title)
+    # print(wb.sheetnames)
+
+    projectTitle = titleOfProject
+    wb['Sheet'].title = "Report on Automation"
+    sh1 = wb.active
+    sh1['A1'] = projectTitle
+    sh1['A1'].font = Font(bold=True, name="Calibri", underline='single')
+    sh1.column_dimensions['A'].width = 21
+
+    sh1['A3'] = "Note:\nThe readings marked in blue can be sent to CoW as the measurements taken for that month"
+    sh1['A3'].font = Font(bold=False, name="Calibri", underline='none')
+    sh1['A3'].fill = PatternFill("solid", fgColor='bdd7ee')
+    sh1.row_dimensions[3].height = 30
+    sh1.merge_cells('A3:H3')
+
+    # Here we are going to populate a list with all the valid months
+    listMonth = []
+    for x, row in df.iterrows():
+        if (row['Standard'] != ' 0.00') and (row['Off-peak'] != ' 0.00') and (row['Peak'] != ' 0.00'):
+            listMonth.append(row['Month'])
+
+    # Here we loop to contstruct the whole document
+    for x, item in enumerate(listMonth):
+        # print(str(x) + " " + monthDict.get(item))
+        sh1.row_dimensions[(6 + x * numberOfRowsPerMonth)].height = 30
+        sh1.column_dimensions['E'].width = 20
+        sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=monthDict.get(item)).font = Font(bold=True,
+                                                                                                      name='Calibri',
+                                                                                                      underline='single')
+        sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth), value='Current').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth), value='Previous').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=4, row=(6 + x * numberOfRowsPerMonth), value='Month').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=6, row=(6 + x * numberOfRowsPerMonth), value='Sub-Total').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(7 + x * numberOfRowsPerMonth), value='Peak').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(8 + x * numberOfRowsPerMonth), value='Standard').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(9 + x * numberOfRowsPerMonth), value='Off-peak').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth),
+                 value=float(df.loc[df['Month'] == item, "Peak"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth),
+                 value=float(df.loc[df['Month'] == item, "Standard"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth),
+                 value=float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth),
+                 value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')
+
+        if lowSeason.get(item) != None:
+            sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=sp).font = Font(bold=False, name='Calibri')
+            sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ss).font = Font(bold=False, name='Calibri')
+            sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=so).font = Font(bold=False, name='Calibri')
+            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(Low Season)').font = Font(bold=True,
+                                                                                                             name='Calibri')
+            peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
+            standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
+            off = sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).value
+            tarrifP = sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth)).value
+            tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
+            tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
+        else:
+            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(High Season)').font = Font(bold=True,
+                                                                                                              name='Calibri')
+            sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=wp).font = Font(bold=False, name='Calibri')
+            sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ws).font = Font(bold=False, name='Calibri')
+            sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=wo).font = Font(bold=False, name='Calibri')
+            peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
+            standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
+            off = sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).value
+            tarrifP = sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth)).value
+            tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
+            tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
+
+        sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth), value=tarrifP * peak).font = Font(bold=False,
+                                                                                                 name='Calibri')
+        sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth), value=tarrifS * standard).font = Font(bold=False,
+                                                                                                     name='Calibri')
+        sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth), value=tarrifO * off).font = Font(bold=False,
+                                                                                                name='Calibri')
+
+    wb.save(os.path.join(fileLoc.name))
+    return
 
 
 def changeState(btn, nbr, column, row):
     if btn[nbr]['text'] == 'S':
+
         btn[nbr].config(text="O", fg="White", bg="Green")
     elif btn[nbr]['text'] == 'O':
         btn[nbr].config(text="P", fg="White", bg="Red")
@@ -56,112 +193,113 @@ def exit():
 
 
 def genOutput():
-    # for x, item in enumerate(monthList):
-    #     dfTotals.loc[x] = [item] + [0] + [0] + [0] + [0]
-    #
-    # maxVA = 0
-    # up = 2
-    # float1 = 0
-    # startFlag = 0
-    # csvFile = open(rootloc)
-    # dateSplit = [2019,1,1]
-    # lines = csvFile.readlines()
-    # for p in lines:
-    #     p1 = p.replace('"', '')
-    #     p2 = p1.split(',')
-    #
-    #     if (p.find('Date') != -1) and (p.find('Total VA') != -1):
-    #         startFlag = 1
-    #
-    #     if startFlag == 1:
-    #         try:
-    #             dateI = p2.index('Date')
-    #             totalI = p2.index('Total VA')
-    #             startI = p2.index('Start')
-    #             endI = p2.index('End')
-    #             importI = p2.index('Import W')
-    #         except ValueError:
-    #             number = -1
-    #             for x, item in enumerate(monthList):
-    #                 if p.find(monthList[x]) != -1:
-    #                     number = p.find(monthList[x])
-    #
-    #             if number != -1:
-    #                 up = up + 1
-    #                 if monthList[dateSplit[1] - 1] != p2[dateI].split('-')[1]:
-    #                     maxVA = 0
-    #                 else:
-    #                     pass
-    #                 dateSplit = p2[dateI].split('-')
-    #                 dateInteger = monthList.index(dateSplit[1]) + 1
-    #                 dateSplit[1] = dateInteger
-    #                 dateSplit[2] = '20' + dateSplit[2]
-    #                 startHour = int(p2[startI].split(":")[0])
-    #                 day = datetime.datetime(int(dateSplit[2]), dateSplit[1], int(dateSplit[0])).weekday()
-    #                 float1 += float(p2[importI])
-    #                 if (float(p2[totalI]) > maxVA):
-    #                     dfTotals.loc[(dateSplit[1] - 1), 'Max kVA'] = float(p2[totalI])
-    #                     maxVA = float(p2[totalI])
-    #                 if (dateInteger < 4) or (dateInteger > 8):
-    #                     if (day < 5):
-    #                         if (dfF.iloc[startHour]['Sum Week'] == 'O'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Sum Week'] == 'S'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Sum Week'] == 'P'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-    #                     elif (day == 5):
-    #                         if (dfF.iloc[startHour]['Sum Sat'] == 'O'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Sum Sat'] == 'S'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Sum Sat'] == 'P'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-    #                     elif (day == 6):
-    #                         if (dfF.iloc[startHour]['Sum Sun'] == 'O'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Sum Sun'] == 'S'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Sum Sun'] == 'P'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-    #                 elif (dateInteger > 3) and (dateInteger < 9):
-    #                     if (day < 5):
-    #                         if (dfF.iloc[startHour]['Wint Week'] == 'O'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Wint Week'] == 'S'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Wint Week'] == 'P'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-    #                     elif (day == 5):
-    #                         if (dfF.iloc[startHour]['Wint Sat'] == 'O'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Wint Sat'] == 'S'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Wint Sat'] == 'P'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-    #                     elif (day == 6):
-    #                         if (dfF.iloc[startHour]['Wint Sun'] == 'O'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Wint Sun'] == 'S'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
-    #                         elif (dfF.iloc[startHour]['Wint Sun'] == 'P'):
-    #                             dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
-    #
-    # for x, row in dfTotals.iterrows():
-    #     dfTotals.iloc[x]["Off-peak"] = "{: .2f}".format(dfTotals.iloc[x]["Off-peak"])
-    #     dfTotals.iloc[x]["Peak"] = "{: .2f}".format(dfTotals.iloc[x]["Peak"])
-    #     dfTotals.iloc[x]["Standard"] = "{: .2f}".format(dfTotals.iloc[x]["Standard"])
-    #     dfTotals.iloc[x]["'Max kVA'"] = "{: .2f}".format(dfTotals.iloc[x]["Max kVA"])
-    #
-    # file = asksaveasfile(initialdir="/", title="Select output location",
-    #                                       filetypes=(("csv file ", "*.csv"),("all files", "*.*")), defaultextension = ".csv")
-    #
-    # dfTotalsString = dfTotals.round(1).astype(str)
-    # dfTotalsString['Off-peak'] += " kWh"
-    # dfTotalsString['Standard'] += " kWh"
-    # dfTotalsString['Peak'] += " kWh"
-    # dfTotalsString['Max kVA'] += " kVA"
+    for x, item in enumerate(monthList):
+        dfTotals.loc[x] = [item] + [0] + [0] + [0] + [0]
+
+    maxVA = 0
+    up = 2
+    float1 = 0
+    startFlag = 0
+    csvFile = open(rootloc)
+    dateSplit = [2019, 1, 1]
+    lines = csvFile.readlines()
+    for p in lines:
+        p1 = p.replace('"', '')
+        p2 = p1.split(',')
+
+        if (p.find('Date') != -1) and (p.find('Total VA') != -1):
+            startFlag = 1
+
+        if startFlag == 1:
+            try:
+                dateI = p2.index('Date')
+                totalI = p2.index('Total VA')
+                startI = p2.index('Start')
+                endI = p2.index('End')
+                importI = p2.index('Import W')
+            except ValueError:
+                number = -1
+                for x, item in enumerate(monthList):
+                    if p.find(monthList[x]) != -1:
+                        number = p.find(monthList[x])
+
+                if number != -1:
+                    up = up + 1
+                    if monthList[dateSplit[1] - 1] != p2[dateI].split('-')[1]:
+                        maxVA = 0
+                    else:
+                        pass
+                    dateSplit = p2[dateI].split('-')
+                    dateInteger = monthList.index(dateSplit[1]) + 1
+                    dateSplit[1] = dateInteger
+                    dateSplit[2] = '20' + dateSplit[2]
+                    startHour = int(p2[startI].split(":")[0])
+                    day = datetime.datetime(int(dateSplit[2]), dateSplit[1], int(dateSplit[0])).weekday()
+                    float1 += float(p2[importI])
+                    if (float(p2[totalI]) > maxVA):
+                        dfTotals.loc[(dateSplit[1] - 1), 'Max kVA'] = float(p2[totalI])
+                        maxVA = float(p2[totalI])
+                    if (dateInteger < 4) or (dateInteger > 8):
+                        if (day < 5):
+                            if (dfF.iloc[startHour]['Sum Week'] == 'O'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Sum Week'] == 'S'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Sum Week'] == 'P'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                        elif (day == 5):
+                            if (dfF.iloc[startHour]['Sum Sat'] == 'O'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Sum Sat'] == 'S'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Sum Sat'] == 'P'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                        elif (day == 6):
+                            if (dfF.iloc[startHour]['Sum Sun'] == 'O'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Sum Sun'] == 'S'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Sum Sun'] == 'P'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                    elif (dateInteger > 3) and (dateInteger < 9):
+                        if (day < 5):
+                            if (dfF.iloc[startHour]['Wint Week'] == 'O'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Wint Week'] == 'S'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Wint Week'] == 'P'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                        elif (day == 5):
+                            if (dfF.iloc[startHour]['Wint Sat'] == 'O'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Wint Sat'] == 'S'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Wint Sat'] == 'P'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                        elif (day == 6):
+                            if (dfF.iloc[startHour]['Wint Sun'] == 'O'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Wint Sun'] == 'S'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                            elif (dfF.iloc[startHour]['Wint Sun'] == 'P'):
+                                dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+
+    for x, row in dfTotals.iterrows():
+        dfTotals.iloc[x]["Off-peak"] = "{: .2f}".format(dfTotals.iloc[x]["Off-peak"])
+        dfTotals.iloc[x]["Peak"] = "{: .2f}".format(dfTotals.iloc[x]["Peak"])
+        dfTotals.iloc[x]["Standard"] = "{: .2f}".format(dfTotals.iloc[x]["Standard"])
+        dfTotals.iloc[x]["'Max kVA'"] = "{: .2f}".format(dfTotals.iloc[x]["Max kVA"])
+
+    file = asksaveasfile(initialdir="/", title="Select output location",
+                         filetypes=(("Excel File", "*.xlsx"), ("all files", "*.*")), defaultextension=".xlsx")
+
+    dfTotalsString = dfTotals.round(1).astype(str)
+    dfTotalsString['Off-peak'] += " kWh"
+    dfTotalsString['Standard'] += " kWh"
+    dfTotalsString['Peak'] += " kWh"
+    dfTotalsString['Max kVA'] += " kVA"
     # dfTotalsString.to_csv(file, index=False)
+    createExcel("This is the test title", dfTotals, file)
     return
 
 
@@ -279,27 +417,27 @@ summerT.grid(column=18, row=0)
 peak = tk.Label(root, text="Peak")
 peak.grid(column=15, row=1)
 off = tk.Label(root, text="Off")
-off.grid(column=15, row=2)
+off.grid(column=15, row=3)
 standard = tk.Label(root, text="Standard")
-standard.grid(column=15, row=3)
+standard.grid(column=15, row=2)
 
 winterP = tk.Entry(root)
-winterP.insert(1,"2.0")
+winterP.insert(1, "2.97")
 winterP.grid(column=16, row=1)
 winterO = tk.Entry(root)
-winterO.insert(1,"2.0")
+winterO.insert(1, "1.99")
 winterO.grid(column=16, row=2)
 winterS = tk.Entry(root)
-winterS.insert(1,"2.0")
+winterS.insert(1, "1.25")
 winterS.grid(column=16, row=3)
 summerP = tk.Entry(root)
-summerP.insert(1,"2.0")
+summerP.insert(1, "2.04")
 summerP.grid(column=18, row=1)
 summerO = tk.Entry(root)
-summerO.insert(1,"2.0")
+summerO.insert(1, "1.75")
 summerO.grid(column=18, row=2)
 summerS = tk.Entry(root)
-summerS.insert(1,"2.0")
+summerS.insert(1, "1.30")
 summerS.grid(column=18, row=3)
 
 stringT = 'O'
@@ -368,7 +506,8 @@ outputBt.grid(column=16, columnspan=3, row=15, rowspan=2)
 quitBt = tk.Button(root, text="4. Exit", bg="Grey", command=exit, width=16)
 quitBt.grid(column=16, columnspan=3, row=17, rowspan=2)
 
-testBt = tk.Button(root, text="5. Text", bg="Grey", command=test, width=16)
-testBt.grid(column=16, columnspan=3, row=19, rowspan=2)
+# testBt = tk.Button(root, text="5. Text", bg="Grey", command=lambda: createExcel("This is the test title", dfTotals),
+#                    width=16)
+# testBt.grid(column=16, columnspan=3, row=19, rowspan=2)
 
 root.mainloop()
