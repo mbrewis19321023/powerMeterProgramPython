@@ -48,6 +48,7 @@ def createExcel(titleOfProject, df, fileLoc):
     maxD = float(maxDT.get())
     ecbLevyV = float(ecbLevy.get())
     nefLevyV = float(nefLevy.get())
+    networkTariff = float(netwLevy.get())
 
     monthDict = {'Jan': 'January',
                  'Feb': 'February',
@@ -112,52 +113,49 @@ def createExcel(titleOfProject, df, fileLoc):
 
     # Here we loop to contstruct the whole document
     for x, item in enumerate(listMonth):
-        # print(str(x) + " " + monthDict.get(item))
         sh1.row_dimensions[(6 + x * numberOfRowsPerMonth)].height = 30
         sh1.column_dimensions['E'].width = 20
-        sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=monthDict.get(item)).font = Font(bold=True,
-                                                                                                      name='Calibri',
-                                                                                                      underline='single')
+        sh1.column_dimensions['F'].width = 17
+
+        # This creates the row with the month name
+        sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=monthDict.get(item)).font = Font(bold=True, name='Calibri', underline='single')
+
+        # This creates the row with the headings
         sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth), value='Current').font = Font(bold=True, name='Calibri')
         sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth), value='Previous').font = Font(bold=True, name='Calibri')
         sh1.cell(column=4, row=(6 + x * numberOfRowsPerMonth), value='Month').font = Font(bold=True, name='Calibri')
         sh1.cell(column=6, row=(6 + x * numberOfRowsPerMonth), value='Sub-Total').font = Font(bold=True, name='Calibri')
+
+        # This creates the column with the headings
         sh1.cell(column=1, row=(7 + x * numberOfRowsPerMonth), value='Peak').font = Font(bold=True, name='Calibri')
         sh1.cell(column=1, row=(8 + x * numberOfRowsPerMonth), value='Standard').font = Font(bold=True, name='Calibri')
         sh1.cell(column=1, row=(9 + x * numberOfRowsPerMonth), value='Off-peak').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True,
-                                                                                                name='Calibri')
-        sh1.cell(column=1, row=(11 + x * numberOfRowsPerMonth), value='ECB Levy').font = Font(bold=True,
-                                                                                                name='Calibri')
-        sh1.cell(column=1, row=(12 + x * numberOfRowsPerMonth), value='NEF Levy').font = Font(bold=True,
-                                                                                              name='Calibri')
+        sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(11 + x * numberOfRowsPerMonth), value='ECB Levy').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(12 + x * numberOfRowsPerMonth), value='NEF Levy').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(13 + x * numberOfRowsPerMonth), value='Network Access Charge').font = Font(bold=True, name='Calibri')
 
+        # This populates the monthly readings column
+        total = float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])
+        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Peak"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Standard"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth), value=100).font = Font(bold=False, name='Calibri')
 
-        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth),
-                 value=float(df.loc[df['Month'] == item, "Peak"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth),
-                 value=float(df.loc[df['Month'] == item, "Standard"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth),
-                 value=float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth),
-                 value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth),
-                 value= float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth),
-                 value= float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=5, row=(10 + x * numberOfRowsPerMonth),
-                 value=maxD).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth),
-                 value=ecbLevyV).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=5, row=(12 + x * numberOfRowsPerMonth),
-                 value=nefLevyV).font = Font(bold=False, name='Calibri')
-
-        if lowSeason.get(item) != None:
+        # This fills in the tariffs
+        sh1.cell(column=5, row=(10 + x * numberOfRowsPerMonth), value=maxD).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=5, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=5, row=(13 + x * numberOfRowsPerMonth), value=networkTariff).font = Font(bold=False, name='Calibri')
+        if lowSeason.get(item) != None:  # This will check that the month is low season
             sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=sp).font = Font(bold=False, name='Calibri')
             sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ss).font = Font(bold=False, name='Calibri')
             sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=so).font = Font(bold=False, name='Calibri')
-            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(Low Season)').font = Font(bold=True,
-                                                                                                             name='Calibri')
+            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(Low Season)').font = Font(bold=True, name='Calibri')
+            # This just gets the values in certain cells to be used in future calculations
             peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
             standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
             off = sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).value
@@ -165,11 +163,11 @@ def createExcel(titleOfProject, df, fileLoc):
             tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
             tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
         else:
-            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(High Season)').font = Font(bold=True,
-                                                                                                              name='Calibri')
+            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(High Season)').font = Font(bold=True, name='Calibri')
             sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=wp).font = Font(bold=False, name='Calibri')
             sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ws).font = Font(bold=False, name='Calibri')
             sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=wo).font = Font(bold=False, name='Calibri')
+            # This just gets the values in certain cells to be used in future calculations
             peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
             standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
             off = sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).value
@@ -177,20 +175,31 @@ def createExcel(titleOfProject, df, fileLoc):
             tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
             tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
 
+        # This gets the value for the month
         maxDfromData = sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth)).value
-        totalForLevy = float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])
-        sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth), value=tarrifP * peak).font = Font(bold=False,
-                                                                                                 name='Calibri')
-        sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth), value=tarrifS * standard).font = Font(bold=False,
-                                                                                                     name='Calibri')
-        sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth), value=tarrifO * off).font = Font(bold=False,
-                                                                                                name='Calibri')
-        sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth), value=maxD * maxDfromData).font = Font(bold=False,
-                                                                                                name='Calibri')
-        sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV * totalForLevy).font = Font(bold=False,
-                                                                                                       name='Calibri')
-        sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV * totalForLevy).font = Font(bold=False,
-                                                                                                       name='Calibri')
+        networkSize = sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth)).value
+        totalForLevy = total
+
+        # This is the sub totals column
+        sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth), value=tarrifP * peak).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth), value=tarrifS * standard).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth), value=tarrifO * off).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth), value=maxD * maxDfromData).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth), value=networkSize * networkTariff).font = Font(bold=False, name='Calibri')
+
+        # This is probably a bad way of getting and summing these values but here goes
+        v1 = sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth)).value
+        v2 = sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth)).value
+        v3 = sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth)).value
+        v4 = sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth)).value
+        v5 = sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth)).value
+        v6 = sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth)).value
+        v7 = sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth)).value
+
+        # This is where we sum all of the monthly rows
+        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth), value=(v1 + v2 + v3 + v4 + v5 + v6 + v7)).font = Font(bold=True, name='Calibri')
 
     wb.save(os.path.join(fileLoc.name))
     return
@@ -327,7 +336,7 @@ def genOutput():
     dfTotalsString['Peak'] += " kWh"
     dfTotalsString['Max kVA'] += " kVA"
     # dfTotalsString.to_csv(file, index=False)
-    createExcel("This is the test title", dfTotals, file)
+    createExcel("Results", dfTotals, file)
     return
 
 
@@ -433,13 +442,13 @@ lbl23.grid(column=0, row=25)
 fill1 = tk.Label(root, text="      ")
 fill1.grid(column=14, row=0)
 
-winterT = tk.Label(root, text="Winter Tariffs")
+winterT = tk.Label(root, text="Winter Tariffs (N$/kWh)")
 winterT.grid(column=16, row=0)
 
 fill1 = tk.Label(root, text="      ")
 fill1.grid(column=17, row=0)
 
-summerT = tk.Label(root, text="Summer Tariffs")
+summerT = tk.Label(root, text="Summer Tariffs (N$/kWh)")
 summerT.grid(column=18, row=0)
 
 peak = tk.Label(root, text="Peak")
@@ -471,20 +480,26 @@ summerS.grid(column=18, row=3)
 maxDT = tk.Entry(root)
 maxDT.insert(1, "138")
 maxDT.grid(column=16, row=7)
-maxDTL = tk.Label(root, text="Max Demand Tariff")
+maxDTL = tk.Label(root, text="Max Demand Tariff (N$/kVA)")
 maxDTL.grid(column=16, row=6)
 
 ecbLevy = tk.Entry(root)
 ecbLevy.insert(1, "0.02120")
 ecbLevy.grid(column=16, row=9)
-ecbLevyL = tk.Label(root, text="ECB Levy")
+ecbLevyL = tk.Label(root, text="ECB Levy (N$/kWh)")
 ecbLevyL.grid(column=16, row=8)
 
 nefLevy = tk.Entry(root)
 nefLevy.insert(1, "0.016")
 nefLevy.grid(column=16, row=11)
-nefLevyL = tk.Label(root, text="NEF Levy")
+nefLevyL = tk.Label(root, text="NEF Levy (N$/kWh)")
 nefLevyL.grid(column=16, row=10)
+
+netwLevy = tk.Entry(root)
+netwLevy.insert(1, "52")
+netwLevy.grid(column=16, row=13)
+netwLevyL = tk.Label(root, text="Network Access Charge (N$/kVA)")
+netwLevyL.grid(column=16, row=12)
 
 stringT = 'O'
 stringC = 'Green'
@@ -537,20 +552,17 @@ for i in range(6):
         dfLinks.loc[number] = [i] + [j] + [number] + list(btn[number]['text']) + [realColumn]
         number += 1
 
-canvas = tk.Canvas(bg="#F0F0F0", width=50)
-canvas.grid(column=11, columnspan=5, row=2, rowspan=21)
-
 inputBt = tk.Button(root, text="1. Select Input", bg="Grey", command=selectIn, width=16)
-inputBt.grid(column=16, columnspan=3, row=13, rowspan=2)
+inputBt.grid(column=16, row=15, rowspan=2)
 
 confirmSchedule = tk.Button(root, text="2. Confirm Schedule", bg="Grey", command=lambda: confirmSched(btn), width=16)
-confirmSchedule.grid(column=16, columnspan=3, row=15, rowspan=2)
+confirmSchedule.grid(column=16, row=17, rowspan=2)
 
 outputBt = tk.Button(root, text="3. Generate Output", bg="Grey", command=genOutput, width=16)
-outputBt.grid(column=16, columnspan=3, row=17, rowspan=2)
+outputBt.grid(column=16, row=19, rowspan=2)
 
 quitBt = tk.Button(root, text="4. Exit", bg="Grey", command=exit, width=16)
-quitBt.grid(column=16, columnspan=3, row=19, rowspan=2)
+quitBt.grid(column=16, row=21, rowspan=2)
 
 # testBt = tk.Button(root, text="5. Text", bg="Grey", command=lambda: createExcel("This is the test title", dfTotals),
 #                    width=16)

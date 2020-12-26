@@ -17,3 +17,9 @@ v2.4 - In this version, we created the excel spreadsheet in a rough format. FOr 
 v2.5.1 Features added since v2.4:
 -Gui moved around a bit and added fields for max demand, ECB and NEF levies.
 -This is reflected in the excel output 
+
+v2.5.2 Features added:
+- Added a network charge field for the gui
+- Added the functionality that sums all the sub-totals. 
+- The Spreadsheet still does not do current and previous as that will be alot of effort
+- Missing nice formatting also 
