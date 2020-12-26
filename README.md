@@ -14,3 +14,6 @@ v2.4 - In this version, we created the excel spreadsheet in a rough format. FOr 
 -add the full package to the excel output file
 -add a loading bar when generating results
 
+v2.5.1 Features added since v2.4:
+-Gui moved around a bit and added fields for max demand, ECB and NEF levies.
+-This is reflected in the excel output 

@@ -45,6 +45,9 @@ def createExcel(titleOfProject, df, fileLoc):
     sp = float(summerP.get())
     so = float(summerS.get())
     ss = float(summerO.get())
+    maxD = float(maxDT.get())
+    ecbLevyV = float(ecbLevy.get())
+    nefLevyV = float(nefLevy.get())
 
     monthDict = {'Jan': 'January',
                  'Feb': 'February',
@@ -122,7 +125,14 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=1, row=(7 + x * numberOfRowsPerMonth), value='Peak').font = Font(bold=True, name='Calibri')
         sh1.cell(column=1, row=(8 + x * numberOfRowsPerMonth), value='Standard').font = Font(bold=True, name='Calibri')
         sh1.cell(column=1, row=(9 + x * numberOfRowsPerMonth), value='Off-peak').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True,
+                                                                                                name='Calibri')
+        sh1.cell(column=1, row=(11 + x * numberOfRowsPerMonth), value='ECB Levy').font = Font(bold=True,
+                                                                                                name='Calibri')
+        sh1.cell(column=1, row=(12 + x * numberOfRowsPerMonth), value='NEF Levy').font = Font(bold=True,
+                                                                                              name='Calibri')
+
+
         sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth),
                  value=float(df.loc[df['Month'] == item, "Peak"])).font = Font(bold=False, name='Calibri')
         sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth),
@@ -131,6 +141,16 @@ def createExcel(titleOfProject, df, fileLoc):
                  value=float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
         sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth),
                  value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth),
+                 value= float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth),
+                 value= float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=5, row=(10 + x * numberOfRowsPerMonth),
+                 value=maxD).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth),
+                 value=ecbLevyV).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=5, row=(12 + x * numberOfRowsPerMonth),
+                 value=nefLevyV).font = Font(bold=False, name='Calibri')
 
         if lowSeason.get(item) != None:
             sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=sp).font = Font(bold=False, name='Calibri')
@@ -157,12 +177,20 @@ def createExcel(titleOfProject, df, fileLoc):
             tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
             tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
 
+        maxDfromData = sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth)).value
+        totalForLevy = float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])
         sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth), value=tarrifP * peak).font = Font(bold=False,
                                                                                                  name='Calibri')
         sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth), value=tarrifS * standard).font = Font(bold=False,
                                                                                                      name='Calibri')
         sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth), value=tarrifO * off).font = Font(bold=False,
                                                                                                 name='Calibri')
+        sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth), value=maxD * maxDfromData).font = Font(bold=False,
+                                                                                                name='Calibri')
+        sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV * totalForLevy).font = Font(bold=False,
+                                                                                                       name='Calibri')
+        sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV * totalForLevy).font = Font(bold=False,
+                                                                                                       name='Calibri')
 
     wb.save(os.path.join(fileLoc.name))
     return
@@ -440,6 +468,24 @@ summerS = tk.Entry(root)
 summerS.insert(1, "1.30")
 summerS.grid(column=18, row=3)
 
+maxDT = tk.Entry(root)
+maxDT.insert(1, "138")
+maxDT.grid(column=16, row=7)
+maxDTL = tk.Label(root, text="Max Demand Tariff")
+maxDTL.grid(column=16, row=6)
+
+ecbLevy = tk.Entry(root)
+ecbLevy.insert(1, "0.02120")
+ecbLevy.grid(column=16, row=9)
+ecbLevyL = tk.Label(root, text="ECB Levy")
+ecbLevyL.grid(column=16, row=8)
+
+nefLevy = tk.Entry(root)
+nefLevy.insert(1, "0.016")
+nefLevy.grid(column=16, row=11)
+nefLevyL = tk.Label(root, text="NEF Levy")
+nefLevyL.grid(column=16, row=10)
+
 stringT = 'O'
 stringC = 'Green'
 number = 0
@@ -495,16 +541,16 @@ canvas = tk.Canvas(bg="#F0F0F0", width=50)
 canvas.grid(column=11, columnspan=5, row=2, rowspan=21)
 
 inputBt = tk.Button(root, text="1. Select Input", bg="Grey", command=selectIn, width=16)
-inputBt.grid(column=16, columnspan=3, row=11, rowspan=2)
+inputBt.grid(column=16, columnspan=3, row=13, rowspan=2)
 
 confirmSchedule = tk.Button(root, text="2. Confirm Schedule", bg="Grey", command=lambda: confirmSched(btn), width=16)
-confirmSchedule.grid(column=16, columnspan=3, row=13, rowspan=2)
+confirmSchedule.grid(column=16, columnspan=3, row=15, rowspan=2)
 
 outputBt = tk.Button(root, text="3. Generate Output", bg="Grey", command=genOutput, width=16)
-outputBt.grid(column=16, columnspan=3, row=15, rowspan=2)
+outputBt.grid(column=16, columnspan=3, row=17, rowspan=2)
 
 quitBt = tk.Button(root, text="4. Exit", bg="Grey", command=exit, width=16)
-quitBt.grid(column=16, columnspan=3, row=17, rowspan=2)
+quitBt.grid(column=16, columnspan=3, row=19, rowspan=2)
 
 # testBt = tk.Button(root, text="5. Text", bg="Grey", command=lambda: createExcel("This is the test title", dfTotals),
 #                    width=16)
