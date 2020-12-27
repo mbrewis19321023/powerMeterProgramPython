@@ -6,10 +6,11 @@ from tkinter import filedialog, Text
 import tkinter.font as font
 from openpyxl.utils.dataframe import dataframe_to_rows
 from tkinter.filedialog import asksaveasfile
+from openpyxl.styles import Alignment
 
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
-from openpyxl.styles import NamedStyle, Font, Border, Side
+from openpyxl.styles import NamedStyle, Font, Border, Side, numbers
 import pandas as pd
 import pandas as pd
 import datetime
@@ -84,8 +85,8 @@ def createExcel(titleOfProject, df, fileLoc):
     # Here is just where we import a dataframe
     highlight = NamedStyle(name="highlight")
     highlight.font = Font(bold=True, size=10, name="Impact")
-    bd = Side(style='thick', color="000000")
-    highlight.border = Border(left=bd, top=bd, right=bd, bottom=bd)
+    bdB = Side(style='double', color="000000")
+    bdT = Side(style='thin', color="000000")
 
     wb = Workbook()
     wb.add_named_style(highlight)
@@ -93,7 +94,7 @@ def createExcel(titleOfProject, df, fileLoc):
     # print(wb.sheetnames)
 
     projectTitle = titleOfProject
-    wb['Sheet'].title = "Report on Automation"
+    wb['Sheet'].title = "Sheet1"
     sh1 = wb.active
     sh1['A1'] = projectTitle
     sh1['A1'].font = Font(bold=True, name="Calibri", underline='single')
@@ -118,43 +119,43 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.column_dimensions['F'].width = 17
 
         # This creates the row with the month name
-        sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=monthDict.get(item)).font = Font(bold=True, name='Calibri', underline='single')
+        sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=monthDict.get(item)).font = Font(bold=True, name='Calibri', underline='single')  # A5
 
         # This creates the row with the headings
-        sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth), value='Current').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth), value='Previous').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=4, row=(6 + x * numberOfRowsPerMonth), value='Month').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=6, row=(6 + x * numberOfRowsPerMonth), value='Sub-Total').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth), value='Current').font = Font(bold=True, name='Calibri')  # B6
+        sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth), value='Previous').font = Font(bold=True, name='Calibri')  # C6
+        sh1.cell(column=4, row=(6 + x * numberOfRowsPerMonth), value='Month').font = Font(bold=True, name='Calibri')  # D6
+        sh1.cell(column=6, row=(6 + x * numberOfRowsPerMonth), value='Sub-Total').font = Font(bold=True, name='Calibri')  # F6
 
         # This creates the column with the headings
-        sh1.cell(column=1, row=(7 + x * numberOfRowsPerMonth), value='Peak').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(8 + x * numberOfRowsPerMonth), value='Standard').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(9 + x * numberOfRowsPerMonth), value='Off-peak').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(11 + x * numberOfRowsPerMonth), value='ECB Levy').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(12 + x * numberOfRowsPerMonth), value='NEF Levy').font = Font(bold=True, name='Calibri')
-        sh1.cell(column=1, row=(13 + x * numberOfRowsPerMonth), value='Network Access Charge').font = Font(bold=True, name='Calibri')
+        sh1.cell(column=1, row=(7 + x * numberOfRowsPerMonth), value='Peak').font = Font(bold=True, name='Calibri')  # A7
+        sh1.cell(column=1, row=(8 + x * numberOfRowsPerMonth), value='Standard').font = Font(bold=True, name='Calibri')  # A8
+        sh1.cell(column=1, row=(9 + x * numberOfRowsPerMonth), value='Off-peak').font = Font(bold=True, name='Calibri')  # A9
+        sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True, name='Calibri')  # A10
+        sh1.cell(column=1, row=(11 + x * numberOfRowsPerMonth), value='ECB Levy').font = Font(bold=True, name='Calibri')  # A11
+        sh1.cell(column=1, row=(12 + x * numberOfRowsPerMonth), value='NEF Levy').font = Font(bold=True, name='Calibri')  # A12
+        sh1.cell(column=1, row=(13 + x * numberOfRowsPerMonth), value='Network Access Charge').font = Font(bold=True, name='Calibri')  # A13
 
         # This populates the monthly readings column
         total = float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])
-        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Peak"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Standard"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth), value=100).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Peak"])).font = Font(bold=False, name='Calibri')  # D7
+        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Standard"])).font = Font(bold=False, name='Calibri')  # D8
+        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')  # D9
+        sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')  # D10
+        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D11
+        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D12
+        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth), value=100).font = Font(bold=False, name='Calibri')  # D13
 
         # This fills in the tariffs
-        sh1.cell(column=5, row=(10 + x * numberOfRowsPerMonth), value=maxD).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=5, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=5, row=(13 + x * numberOfRowsPerMonth), value=networkTariff).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=5, row=(10 + x * numberOfRowsPerMonth), value=maxD).font = Font(bold=False, name='Calibri')  # E10
+        sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV).font = Font(bold=False, name='Calibri')  # E11
+        sh1.cell(column=5, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV).font = Font(bold=False, name='Calibri')  # E12
+        sh1.cell(column=5, row=(13 + x * numberOfRowsPerMonth), value=networkTariff).font = Font(bold=False, name='Calibri')  # E13
         if lowSeason.get(item) != None:  # This will check that the month is low season
-            sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=sp).font = Font(bold=False, name='Calibri')
-            sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ss).font = Font(bold=False, name='Calibri')
-            sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=so).font = Font(bold=False, name='Calibri')
-            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(Low Season)').font = Font(bold=True, name='Calibri')
+            sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=sp).font = Font(bold=False, name='Calibri')  # E7
+            sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ss).font = Font(bold=False, name='Calibri')  # E8
+            sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=so).font = Font(bold=False, name='Calibri')  # E9
+            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(Low Season)').font = Font(bold=True, name='Calibri')  # E6
             # This just gets the values in certain cells to be used in future calculations
             peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
             standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
@@ -163,10 +164,10 @@ def createExcel(titleOfProject, df, fileLoc):
             tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
             tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
         else:
-            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(High Season)').font = Font(bold=True, name='Calibri')
-            sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=wp).font = Font(bold=False, name='Calibri')
-            sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ws).font = Font(bold=False, name='Calibri')
-            sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=wo).font = Font(bold=False, name='Calibri')
+            sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(High Season)').font = Font(bold=True, name='Calibri')  # E6
+            sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=wp).font = Font(bold=False, name='Calibri')  # E7
+            sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ws).font = Font(bold=False, name='Calibri')  # E8
+            sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth), value=wo).font = Font(bold=False, name='Calibri')  # E9
             # This just gets the values in certain cells to be used in future calculations
             peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
             standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
@@ -174,6 +175,13 @@ def createExcel(titleOfProject, df, fileLoc):
             tarrifP = sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth)).value
             tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
             tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
+
+        # This will centre the text in the heading cells
+        sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth)).alignment = Alignment(horizontal="center", vertical="center")
+        sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth)).alignment = Alignment(horizontal="center", vertical="center")
+        sh1.cell(column=4, row=(6 + x * numberOfRowsPerMonth)).alignment = Alignment(horizontal="center", vertical="center")
+        sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth)).alignment = Alignment(horizontal="center", vertical="center")
+        sh1.cell(column=6, row=(6 + x * numberOfRowsPerMonth)).alignment = Alignment(horizontal="center", vertical="center")
 
         # This gets the value for the month
         maxDfromData = sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth)).value
@@ -189,6 +197,17 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
         sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth), value=networkSize * networkTariff).font = Font(bold=False, name='Calibri')
 
+        # This is where the cells in the sub-total column will be formatted as number type
+        stringT = r'_("N$"* #,##0.00_);_("N$"* \(#,##0.00\);_("N$"* "-"??_);_(@_)'
+        sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).number_format = stringT
+
         # This is probably a bad way of getting and summing these values but here goes
         v1 = sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth)).value
         v2 = sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth)).value
@@ -200,6 +219,18 @@ def createExcel(titleOfProject, df, fileLoc):
 
         # This is where we sum all of the monthly rows
         sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth), value=(v1 + v2 + v3 + v4 + v5 + v6 + v7)).font = Font(bold=True, name='Calibri')
+
+        # This is where we make needed cells that blue color
+        for count in range(7, 10):
+            sh1.cell(column=2, row=(count + x * numberOfRowsPerMonth), value='Type_formula').font = Font(italic=False, name="Calibri")
+            sh1.cell(column=2, row=(count + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='bdd7ee')
+
+        sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='bdd7ee')
+        sh1.cell(column=7, row=(14 + x * numberOfRowsPerMonth), value='excl. VAT')
+        sh1.cell(column=1, row=(14 + x * numberOfRowsPerMonth), value='(assume 100kVA)')
+        sh1.cell(column=5, row=(14 + x * numberOfRowsPerMonth), value='Total:').font = Font(bold=True, name="Calibri")
+        sh1.cell(column=5, row=(14 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
+        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
 
     wb.save(os.path.join(fileLoc.name))
     return
@@ -336,7 +367,7 @@ def genOutput():
     dfTotalsString['Peak'] += " kWh"
     dfTotalsString['Max kVA'] += " kVA"
     # dfTotalsString.to_csv(file, index=False)
-    createExcel("Results", dfTotals, file)
+    createExcel("Type_the_project_title", dfTotals, file)
     return
 
 
