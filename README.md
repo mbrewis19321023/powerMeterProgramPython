@@ -32,3 +32,6 @@ v3.1
 - This version includes the addition of the Declared Demand field as well as the subsequent excel results.
 - In addition, the including Vat field has been added to the excel document.
 - Next Version plans: Add the net metering fields as well as their appropriate tarriffs
+
+v3.2
+- This version is complete with the Net metering functionality

@@ -23,7 +23,7 @@ rootloc = ''
 dfLinks = pd.DataFrame(columns=['Column ', 'Row', 'Number', 'State', 'realColumn'])
 dfF = pd.DataFrame(columns=['Hour', 'Sum Week', 'Sum Sat', 'Sum Sun', 'Wint Week', 'Wint Sat', 'Wint Sun'])
 monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-dfTotals = pd.DataFrame(columns=['Month', 'Off-peak', 'Standard', 'Peak', 'Max kVA'])
+dfTotals = pd.DataFrame(columns=['Month', 'Off-peak', 'Standard', 'Peak', 'Max kVA', 'Year', 'netP', 'netS', 'netO'])
 btn = []
 
 # This is the font for the excel main headings
@@ -50,6 +50,7 @@ def createExcel(titleOfProject, df, fileLoc):
     nefLevyV = float(nefLevy.get())
     networkTariff = float(netwLevy.get())
     declaredDFloat = float(declaredD.get())
+    netMeterTariffV = float(netMeterTariff.get())
 
     monthDict = {'Jan': 'January',
                  'Feb': 'February',
@@ -119,7 +120,8 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.column_dimensions['F'].width = 17
 
         # This creates the row with the month name
-        sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=monthDict.get(item)).font = Font(bold=True, name='Calibri', underline='single')  # A5
+        tempV = monthDict.get(item) + ' ' + str("{: .0f}".format(float((df.loc[df['Month'] == item, 'Year']))))
+        sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=(tempV)).font = Font(bold=True, name='Calibri', underline='single')  # A5
 
         # This creates the row with the headings
         # sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth), value='Current').font = Font(bold=True, name='Calibri')  # B6
@@ -128,13 +130,16 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=6, row=(6 + x * numberOfRowsPerMonth), value='Sub-Total').font = Font(bold=True, name='Calibri')  # F6
 
         # This creates the column with the headings
-        sh1.cell(column=1, row=(7 + x * numberOfRowsPerMonth), value='Peak').font = Font(bold=True, name='Calibri')  # A7
-        sh1.cell(column=1, row=(8 + x * numberOfRowsPerMonth), value='Standard').font = Font(bold=True, name='Calibri')  # A8
-        sh1.cell(column=1, row=(9 + x * numberOfRowsPerMonth), value='Off-peak').font = Font(bold=True, name='Calibri')  # A9
+        sh1.cell(column=1, row=(7 + x * numberOfRowsPerMonth), value='Consumption: Peak').font = Font(bold=True, name='Calibri')  # A7
+        sh1.cell(column=1, row=(8 + x * numberOfRowsPerMonth), value='Consumption: Standard').font = Font(bold=True, name='Calibri')  # A8
+        sh1.cell(column=1, row=(9 + x * numberOfRowsPerMonth), value='Consumption: Off-peak').font = Font(bold=True, name='Calibri')  # A9
         sh1.cell(column=1, row=(10 + x * numberOfRowsPerMonth), value='Max Demand').font = Font(bold=True, name='Calibri')  # A10
-        sh1.cell(column=1, row=(11 + x * numberOfRowsPerMonth), value='ECB Levy').font = Font(bold=True, name='Calibri')  # A11
-        sh1.cell(column=1, row=(12 + x * numberOfRowsPerMonth), value='NEF Levy').font = Font(bold=True, name='Calibri')  # A12
-        sh1.cell(column=1, row=(13 + x * numberOfRowsPerMonth), value='Network Access Charge').font = Font(bold=True, name='Calibri')  # A13
+        sh1.cell(column=1, row=(11 + x * numberOfRowsPerMonth), value='Net Metering: Peak').font = Font(bold=True, name='Calibri')  # A7
+        sh1.cell(column=1, row=(12 + x * numberOfRowsPerMonth), value='Net Metering: Standard').font = Font(bold=True, name='Calibri')  # A8
+        sh1.cell(column=1, row=(13 + x * numberOfRowsPerMonth), value='Net Metering: Off-peak').font = Font(bold=True, name='Calibri')  # A9
+        sh1.cell(column=1, row=(14 + x * numberOfRowsPerMonth), value='ECB Levy').font = Font(bold=True, name='Calibri')  # A11
+        sh1.cell(column=1, row=(15 + x * numberOfRowsPerMonth), value='NEF Levy').font = Font(bold=True, name='Calibri')  # A12
+        sh1.cell(column=1, row=(16 + x * numberOfRowsPerMonth), value='Network Access Charge').font = Font(bold=True, name='Calibri')  # A13
 
         # This populates the monthly readings column
         total = float(df.loc[df['Month'] == item, "Peak"]) + float(df.loc[df['Month'] == item, "Standard"]) + float(df.loc[df['Month'] == item, "Off-peak"])
@@ -142,15 +147,21 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Standard"])).font = Font(bold=False, name='Calibri')  # D8
         sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Off-peak"])).font = Font(bold=False, name='Calibri')  # D9
         sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')  # D10
-        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D11
-        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D12
-        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth), value=declaredDFloat).font = Font(bold=False, name='Calibri')  # D13
+        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "netP"])).font = Font(bold=False, name='Calibri')  # D7
+        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "netS"])).font = Font(bold=False, name='Calibri')  # D8
+        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "netO"])).font = Font(bold=False, name='Calibri')  # D9
+        sh1.cell(column=4, row=(14 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D11
+        sh1.cell(column=4, row=(15 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D12
+        sh1.cell(column=4, row=(16 + x * numberOfRowsPerMonth), value=declaredDFloat).font = Font(bold=False, name='Calibri')  # D13
 
         # This fills in the tariffs
         sh1.cell(column=5, row=(10 + x * numberOfRowsPerMonth), value=maxD).font = Font(bold=False, name='Calibri')  # E10
-        sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV).font = Font(bold=False, name='Calibri')  # E11
-        sh1.cell(column=5, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV).font = Font(bold=False, name='Calibri')  # E12
-        sh1.cell(column=5, row=(13 + x * numberOfRowsPerMonth), value=networkTariff).font = Font(bold=False, name='Calibri')  # E13
+        sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth), value=netMeterTariffV).font = Font(bold=False, name='Calibri')  # E11
+        sh1.cell(column=5, row=(12 + x * numberOfRowsPerMonth), value=netMeterTariffV).font = Font(bold=False, name='Calibri')  # E12
+        sh1.cell(column=5, row=(13 + x * numberOfRowsPerMonth), value=netMeterTariffV).font = Font(bold=False, name='Calibri')  # E13
+        sh1.cell(column=5, row=(14 + x * numberOfRowsPerMonth), value=ecbLevyV).font = Font(bold=False, name='Calibri')  # E11
+        sh1.cell(column=5, row=(15 + x * numberOfRowsPerMonth), value=nefLevyV).font = Font(bold=False, name='Calibri')  # E12
+        sh1.cell(column=5, row=(16 + x * numberOfRowsPerMonth), value=networkTariff).font = Font(bold=False, name='Calibri')  # E13
         if lowSeason.get(item) != None:  # This will check that the month is low season
             sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=sp).font = Font(bold=False, name='Calibri')  # E7
             sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth), value=ss).font = Font(bold=False, name='Calibri')  # E8
@@ -160,9 +171,13 @@ def createExcel(titleOfProject, df, fileLoc):
             peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
             standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
             off = sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).value
+            peakM = sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth)).value
+            standardM = sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth)).value
+            offM = sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth)).value
             tarrifP = sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth)).value
             tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
             tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
+            tarrifNetMetering = sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth)).value
         else:
             sh1.cell(column=5, row=(6 + x * numberOfRowsPerMonth), value='Tariff\n(High Season)').font = Font(bold=True, name='Calibri')  # E6
             sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth), value=wp).font = Font(bold=False, name='Calibri')  # E7
@@ -172,10 +187,13 @@ def createExcel(titleOfProject, df, fileLoc):
             peak = sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).value
             standard = sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).value
             off = sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).value
+            peakM = sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth)).value
+            standardM = sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth)).value
+            offM = sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth)).value
             tarrifP = sh1.cell(column=5, row=(7 + x * numberOfRowsPerMonth)).value
             tarrifS = sh1.cell(column=5, row=(8 + x * numberOfRowsPerMonth)).value
             tarrifO = sh1.cell(column=5, row=(9 + x * numberOfRowsPerMonth)).value
-
+            tarrifNetMetering = sh1.cell(column=5, row=(11 + x * numberOfRowsPerMonth)).value
         # This will centre the text in the heading cells
         sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth)).alignment = Alignment(horizontal="center", vertical="center")
         sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth)).alignment = Alignment(horizontal="center", vertical="center")
@@ -193,12 +211,15 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth), value=tarrifS * standard).font = Font(bold=False, name='Calibri')
         sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth), value=tarrifO * off).font = Font(bold=False, name='Calibri')
         sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth), value=maxD * maxDfromData).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth), value=declaredDFloat * networkTariff).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth), value=-tarrifNetMetering * peakM).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth), value=-tarrifNetMetering * standardM).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth), value=-tarrifNetMetering * offM).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth), value=ecbLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth), value=nefLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(16 + x * numberOfRowsPerMonth), value=declaredDFloat * networkTariff).font = Font(bold=False, name='Calibri')
 
         # This is where the cells in the sub-total column will be formatted as number type
-        stringT = r'_("N$"* #,##0.00_);_("N$"* \(#,##0.00\);_("N$"* "-"??_);_(@_)'
+        stringT = r'_("N$"* #,##0.00_);_("N$"* -#,##0.00_);_("N$"* "-"??_);_(@_)'
         sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth)).number_format = stringT
         sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth)).number_format = stringT
         sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth)).number_format = stringT
@@ -208,19 +229,25 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth)).number_format = stringT
         sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).number_format = stringT
         sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(16 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(17 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(18 + x * numberOfRowsPerMonth)).number_format = stringT
 
         # This is probably a bad way of getting and summing these values but here goes
-        v1 = sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth)).value
-        v2 = sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth)).value
-        v3 = sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth)).value
-        v4 = sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth)).value
-        v5 = sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth)).value
-        v6 = sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth)).value
-        v7 = sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth)).value
+        v7 = sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth)).value
+        v8 = sh1.cell(column=6, row=(8 + x * numberOfRowsPerMonth)).value
+        v9 = sh1.cell(column=6, row=(9 + x * numberOfRowsPerMonth)).value
+        v10 = sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth)).value
+        v11 = sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth)).value
+        v12 = sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth)).value
+        v13 = sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth)).value
+        v14 = sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).value
+        v15 = sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth)).value
+        v16 = sh1.cell(column=6, row=(16 + x * numberOfRowsPerMonth)).value
 
         # This is where we sum all of the monthly rows
-        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth), value=(v1 + v2 + v3 + v4 + v5 + v6 + v7)).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth), value=(sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).value) * (1.15)).font = Font(bold=True, name='Calibri')
+        sh1.cell(column=6, row=(17 + x * numberOfRowsPerMonth), value=(v7 + v8 + v9 + v10 + v11 + v12 + v13 + v14 + v15 + v16)).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(18 + x * numberOfRowsPerMonth), value=(sh1.cell(column=6, row=(17 + x * numberOfRowsPerMonth)).value) * (1.15)).font = Font(bold=True, name='Calibri')
 
         # This is where we make needed cells that blue color
         # for count in range(7, 10):
@@ -228,17 +255,21 @@ def createExcel(titleOfProject, df, fileLoc):
         #     sh1.cell(column=2, row=(count + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='bdd7ee')
 
         # This is where the cells are colored
-        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='ff4545') #This is peak
-        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='FFFF00') #This is standard
-        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='00CD00') #This is off
+        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='ff4545')  # This is peak
+        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='FFFF00')  # This is standard
+        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='00CD00')  # This is off
         sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='bdd7ee')
+        sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='ff4545')  # This is peak
+        sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='FFFF00')  # This is standard
+        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='00CD00')  # This is off
 
-        sh1.cell(column=7, row=(14 + x * numberOfRowsPerMonth), value='Excl. VAT')
-        sh1.cell(column=7, row=(15 + x * numberOfRowsPerMonth), value='VAT (15%)')
+        # This is just where some things are finalized and borders added
+        sh1.cell(column=7, row=(17 + x * numberOfRowsPerMonth), value='Excl. VAT')
+        sh1.cell(column=7, row=(18 + x * numberOfRowsPerMonth), value='VAT (15%)')
         # sh1.cell(column=1, row=(14 + x * numberOfRowsPerMonth), value='(assume 100kVA)')
-        sh1.cell(column=5, row=(15 + x * numberOfRowsPerMonth), value='Total:').font = Font(bold=True, name="Calibri")
-        sh1.cell(column=5, row=(15 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
-        sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
+        sh1.cell(column=5, row=(17 + x * numberOfRowsPerMonth), value='Total:').font = Font(bold=True, name="Calibri")
+        sh1.cell(column=5, row=(17 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
+        sh1.cell(column=6, row=(17 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
 
     wb.save(os.path.join(fileLoc.name))
     return
@@ -270,7 +301,7 @@ def exit():
 
 def genOutput():
     for x, item in enumerate(monthList):
-        dfTotals.loc[x] = [item] + [0] + [0] + [0] + [0]
+        dfTotals.loc[x] = [item] + [0] + [0] + [0] + [0] + [0] + [0] + [0] + [0]
 
     maxVA = 0
     up = 2
@@ -293,6 +324,7 @@ def genOutput():
                 startI = p2.index('Start')
                 endI = p2.index('End')
                 importI = p2.index('Import W')
+                exportI = p2.index('Export W')
             except ValueError:
                 number = -1
                 for x, item in enumerate(monthList):
@@ -312,6 +344,9 @@ def genOutput():
                     startHour = int(p2[startI].split(":")[0])
                     day = datetime.datetime(int(dateSplit[2]), dateSplit[1], int(dateSplit[0])).weekday()
                     float1 += float(p2[importI])
+                    # This is where we try to populate the year colum
+                    dfTotals.loc[(dateSplit[1] - 1), 'Year'] = (float(dateSplit[2]))
+
                     if (float(p2[totalI]) > maxVA):
                         dfTotals.loc[(dateSplit[1] - 1), 'Max kVA'] = float(p2[totalI])
                         maxVA = float(p2[totalI])
@@ -319,52 +354,74 @@ def genOutput():
                         if (day < 5):
                             if (dfF.iloc[startHour]['Sum Week'] == 'O'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netO'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Sum Week'] == 'S'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netS'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Sum Week'] == 'P'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netP'] += float(p2[exportI]) / 2
                         elif (day == 5):
                             if (dfF.iloc[startHour]['Sum Sat'] == 'O'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netO'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Sum Sat'] == 'S'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netS'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Sum Sat'] == 'P'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netP'] += float(p2[exportI]) / 2
                         elif (day == 6):
                             if (dfF.iloc[startHour]['Sum Sun'] == 'O'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netO'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Sum Sun'] == 'S'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netS'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Sum Sun'] == 'P'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netP'] += float(p2[exportI]) / 2
                     elif (dateInteger > 3) and (dateInteger < 9):
                         if (day < 5):
                             if (dfF.iloc[startHour]['Wint Week'] == 'O'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netO'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Wint Week'] == 'S'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netS'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Wint Week'] == 'P'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netP'] += float(p2[exportI]) / 2
                         elif (day == 5):
                             if (dfF.iloc[startHour]['Wint Sat'] == 'O'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netO'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Wint Sat'] == 'S'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netS'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Wint Sat'] == 'P'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netP'] += float(p2[exportI]) / 2
                         elif (day == 6):
                             if (dfF.iloc[startHour]['Wint Sun'] == 'O'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Off-peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netO'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Wint Sun'] == 'S'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Standard'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netS'] += float(p2[exportI]) / 2
                             elif (dfF.iloc[startHour]['Wint Sun'] == 'P'):
                                 dfTotals.loc[(dateSplit[1] - 1), 'Peak'] += float(p2[importI]) / 2
+                                dfTotals.loc[(dateSplit[1] - 1), 'netP'] += float(p2[exportI]) / 2
 
     for x, row in dfTotals.iterrows():
         dfTotals.iloc[x]["Off-peak"] = "{: .2f}".format(dfTotals.iloc[x]["Off-peak"])
         dfTotals.iloc[x]["Peak"] = "{: .2f}".format(dfTotals.iloc[x]["Peak"])
         dfTotals.iloc[x]["Standard"] = "{: .2f}".format(dfTotals.iloc[x]["Standard"])
+        dfTotals.iloc[x]["netO"] = "{: .2f}".format(dfTotals.iloc[x]["netO"])
+        dfTotals.iloc[x]["netP"] = "{: .2f}".format(dfTotals.iloc[x]["netP"])
+        dfTotals.iloc[x]["netS"] = "{: .2f}".format(dfTotals.iloc[x]["netS"])
         dfTotals.iloc[x]["'Max kVA'"] = "{: .2f}".format(dfTotals.iloc[x]["Max kVA"])
+        dfTotals.iloc[x]["Year"] = "{: .0f}".format(dfTotals.iloc[x]["Year"])
 
     file = asksaveasfile(initialdir="/", title="Select output location",
                          filetypes=(("Excel File", "*.xlsx"), ("all files", "*.*")), defaultextension=".xlsx")
@@ -545,6 +602,12 @@ declaredD.insert(1, "200")
 declaredD.grid(column=16, row=15)
 declaredDL = tk.Label(root, text="Declared Demand (kVA)")
 declaredDL.grid(column=16, row=14)
+
+netMeterTariff = tk.Entry(root)
+netMeterTariff.insert(1, "1.50")
+netMeterTariff.grid(column=18, row=7)
+netMeterTariffL = tk.Label(root, text="Net Metering Tariff (N$/kWh)")
+netMeterTariffL.grid(column=18, row=6)
 
 stringT = 'O'
 stringC = 'Green'
