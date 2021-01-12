@@ -7,7 +7,6 @@ import tkinter.font as font
 from openpyxl.utils.dataframe import dataframe_to_rows
 from tkinter.filedialog import asksaveasfile
 from openpyxl.styles import Alignment
-
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
 from openpyxl.styles import NamedStyle, Font, Border, Side, numbers
@@ -50,6 +49,7 @@ def createExcel(titleOfProject, df, fileLoc):
     ecbLevyV = float(ecbLevy.get())
     nefLevyV = float(nefLevy.get())
     networkTariff = float(netwLevy.get())
+    declaredDFloat = float(declaredD.get())
 
     monthDict = {'Jan': 'January',
                  'Feb': 'February',
@@ -78,7 +78,7 @@ def createExcel(titleOfProject, df, fileLoc):
                   'Jul': 'July',
                   'Aug': 'August'}
 
-    numberOfRowsPerMonth: int = 11  # This is how many spaces will be skipped per month in excel
+    numberOfRowsPerMonth: int = 15  # This is how many spaces will be skipped per month in excel
 
     # Red - FF0000
     # Green - 4AE00D
@@ -96,15 +96,15 @@ def createExcel(titleOfProject, df, fileLoc):
     projectTitle = titleOfProject
     wb['Sheet'].title = "Sheet1"
     sh1 = wb.active
-    sh1['A1'] = projectTitle
-    sh1['A1'].font = Font(bold=True, name="Calibri", underline='single')
+    # sh1['A1'] = projectTitle
+    # sh1['A1'].font = Font(bold=True, name="Calibri", underline='single')
     sh1.column_dimensions['A'].width = 21
 
-    sh1['A3'] = "Note:\nThe readings marked in blue can be sent to CoW as the measurements taken for that month"
-    sh1['A3'].font = Font(bold=False, name="Calibri", underline='none')
-    sh1['A3'].fill = PatternFill("solid", fgColor='bdd7ee')
-    sh1.row_dimensions[3].height = 30
-    sh1.merge_cells('A3:H3')
+    # sh1['A3'] = "Note:\nThe readings marked in blue can be sent to CoW as the measurements taken for that month"
+    # sh1['A3'].font = Font(bold=False, name="Calibri", underline='none')
+    # sh1['A3'].fill = PatternFill("solid", fgColor='bdd7ee')
+    # sh1.row_dimensions[3].height = 30
+    # sh1.merge_cells('A3:H3')
 
     # Here we are going to populate a list with all the valid months
     listMonth = []
@@ -122,8 +122,8 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=1, row=(5 + x * numberOfRowsPerMonth), value=monthDict.get(item)).font = Font(bold=True, name='Calibri', underline='single')  # A5
 
         # This creates the row with the headings
-        sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth), value='Current').font = Font(bold=True, name='Calibri')  # B6
-        sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth), value='Previous').font = Font(bold=True, name='Calibri')  # C6
+        # sh1.cell(column=2, row=(6 + x * numberOfRowsPerMonth), value='Current').font = Font(bold=True, name='Calibri')  # B6
+        # sh1.cell(column=3, row=(6 + x * numberOfRowsPerMonth), value='Previous').font = Font(bold=True, name='Calibri')  # C6
         sh1.cell(column=4, row=(6 + x * numberOfRowsPerMonth), value='Month').font = Font(bold=True, name='Calibri')  # D6
         sh1.cell(column=6, row=(6 + x * numberOfRowsPerMonth), value='Sub-Total').font = Font(bold=True, name='Calibri')  # F6
 
@@ -144,7 +144,7 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth), value=float(df.loc[df['Month'] == item, "Max kVA"])).font = Font(bold=False, name='Calibri')  # D10
         sh1.cell(column=4, row=(11 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D11
         sh1.cell(column=4, row=(12 + x * numberOfRowsPerMonth), value=total).font = Font(bold=False, name='Calibri')  # D12
-        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth), value=100).font = Font(bold=False, name='Calibri')  # D13
+        sh1.cell(column=4, row=(13 + x * numberOfRowsPerMonth), value=declaredDFloat).font = Font(bold=False, name='Calibri')  # D13
 
         # This fills in the tariffs
         sh1.cell(column=5, row=(10 + x * numberOfRowsPerMonth), value=maxD).font = Font(bold=False, name='Calibri')  # E10
@@ -195,7 +195,7 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=6, row=(10 + x * numberOfRowsPerMonth), value=maxD * maxDfromData).font = Font(bold=False, name='Calibri')
         sh1.cell(column=6, row=(11 + x * numberOfRowsPerMonth), value=ecbLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
         sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth), value=nefLevyV * totalForLevy).font = Font(bold=False, name='Calibri')
-        sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth), value=networkSize * networkTariff).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth), value=declaredDFloat * networkTariff).font = Font(bold=False, name='Calibri')
 
         # This is where the cells in the sub-total column will be formatted as number type
         stringT = r'_("N$"* #,##0.00_);_("N$"* \(#,##0.00\);_("N$"* "-"??_);_(@_)'
@@ -207,6 +207,7 @@ def createExcel(titleOfProject, df, fileLoc):
         sh1.cell(column=6, row=(12 + x * numberOfRowsPerMonth)).number_format = stringT
         sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth)).number_format = stringT
         sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).number_format = stringT
+        sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth)).number_format = stringT
 
         # This is probably a bad way of getting and summing these values but here goes
         v1 = sh1.cell(column=6, row=(7 + x * numberOfRowsPerMonth)).value
@@ -218,19 +219,26 @@ def createExcel(titleOfProject, df, fileLoc):
         v7 = sh1.cell(column=6, row=(13 + x * numberOfRowsPerMonth)).value
 
         # This is where we sum all of the monthly rows
-        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth), value=(v1 + v2 + v3 + v4 + v5 + v6 + v7)).font = Font(bold=True, name='Calibri')
+        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth), value=(v1 + v2 + v3 + v4 + v5 + v6 + v7)).font = Font(bold=False, name='Calibri')
+        sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth), value=(sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).value) * (1.15)).font = Font(bold=True, name='Calibri')
 
         # This is where we make needed cells that blue color
-        for count in range(7, 10):
-            sh1.cell(column=2, row=(count + x * numberOfRowsPerMonth), value='Type_formula').font = Font(italic=False, name="Calibri")
-            sh1.cell(column=2, row=(count + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='bdd7ee')
+        # for count in range(7, 10):
+        #     sh1.cell(column=2, row=(count + x * numberOfRowsPerMonth), value='Type_formula').font = Font(italic=False, name="Calibri")
+        #     sh1.cell(column=2, row=(count + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='bdd7ee')
 
+        # This is where the cells are colored
+        sh1.cell(column=4, row=(7 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='ff4545') #This is peak
+        sh1.cell(column=4, row=(8 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='FFFF00') #This is standard
+        sh1.cell(column=4, row=(9 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='00CD00') #This is off
         sh1.cell(column=4, row=(10 + x * numberOfRowsPerMonth)).fill = PatternFill("solid", fgColor='bdd7ee')
-        sh1.cell(column=7, row=(14 + x * numberOfRowsPerMonth), value='excl. VAT')
-        sh1.cell(column=1, row=(14 + x * numberOfRowsPerMonth), value='(assume 100kVA)')
-        sh1.cell(column=5, row=(14 + x * numberOfRowsPerMonth), value='Total:').font = Font(bold=True, name="Calibri")
-        sh1.cell(column=5, row=(14 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
-        sh1.cell(column=6, row=(14 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
+
+        sh1.cell(column=7, row=(14 + x * numberOfRowsPerMonth), value='Excl. VAT')
+        sh1.cell(column=7, row=(15 + x * numberOfRowsPerMonth), value='VAT (15%)')
+        # sh1.cell(column=1, row=(14 + x * numberOfRowsPerMonth), value='(assume 100kVA)')
+        sh1.cell(column=5, row=(15 + x * numberOfRowsPerMonth), value='Total:').font = Font(bold=True, name="Calibri")
+        sh1.cell(column=5, row=(15 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
+        sh1.cell(column=6, row=(15 + x * numberOfRowsPerMonth)).border = Border(bottom=bdB, top=bdT)
 
     wb.save(os.path.join(fileLoc.name))
     return
@@ -490,22 +498,22 @@ standard = tk.Label(root, text="Standard")
 standard.grid(column=15, row=2)
 
 winterP = tk.Entry(root)
-winterP.insert(1, "2.97")
+winterP.insert(1, "2.41")
 winterP.grid(column=16, row=1)
 winterO = tk.Entry(root)
-winterO.insert(1, "1.99")
+winterO.insert(1, "1.88")
 winterO.grid(column=16, row=2)
 winterS = tk.Entry(root)
-winterS.insert(1, "1.25")
+winterS.insert(1, "1.42")
 winterS.grid(column=16, row=3)
 summerP = tk.Entry(root)
-summerP.insert(1, "2.04")
+summerP.insert(1, "2.41")
 summerP.grid(column=18, row=1)
 summerO = tk.Entry(root)
-summerO.insert(1, "1.75")
+summerO.insert(1, "1.88")
 summerO.grid(column=18, row=2)
 summerS = tk.Entry(root)
-summerS.insert(1, "1.30")
+summerS.insert(1, "1.42")
 summerS.grid(column=18, row=3)
 
 maxDT = tk.Entry(root)
@@ -532,27 +540,35 @@ netwLevy.grid(column=16, row=13)
 netwLevyL = tk.Label(root, text="Network Access Charge (N$/kVA)")
 netwLevyL.grid(column=16, row=12)
 
+declaredD = tk.Entry(root)
+declaredD.insert(1, "200")
+declaredD.grid(column=16, row=15)
+declaredDL = tk.Label(root, text="Declared Demand (kVA)")
+declaredDL.grid(column=16, row=14)
+
 stringT = 'O'
 stringC = 'Green'
 number = 0
-for i in range(6):
-    for j in range(24):
-        if ((j > 7 and j < 13) or (j > 17 and j < 21)) and (i == 0):
+
+# Set the buttons state
+for i in range(6):  # Because you have the six rows of the winter and summer column, this is the best wat to itterate though them
+    for j in range(24):  # This is the hour
+        if ((j > 6 and j < 10) or (j > 16 and j < 21)) and (i == 0):
             stringT = 'P'
             stringC = 'Red'
-        elif ((j == 6) or (j == 7) or (j > 12 and j < 18) or (j == 21)) and (i == 0):
+        elif ((j == 6) or (j > 9 and j < 17) or (j == 21)) and (i == 0):
             stringT = 'S'
             stringC = 'Yellow'
         elif ((j > 6 and j < 12) or (j == 18) or (j == 19)) and (i == 1):
             stringT = 'S'
             stringC = 'Yellow'
-        elif ((j > 6 and j < 12) or (j > 16 and j < 20)) and (i == 3):
+        elif ((j > 6 and j < 10) or (j > 16 and j < 21)) and (i == 3):
             stringT = 'P'
             stringC = 'Red'
-        elif ((j == 5) or (j == 6) or (j > 11 and j < 17) or (j == 20)) and (i == 3):
+        elif ((j == 6) or (j > 9 and j < 17) or (j == 21)) and (i == 3):
             stringT = 'S'
             stringC = 'Yellow'
-        elif ((j > 5 and j < 11) or (j == 17) or (j == 18)) and (i == 4):
+        elif ((j > 6 and j < 12) or (j == 18) or (j == 19)) and (i == 4):
             stringT = 'S'
             stringC = 'Yellow'
         else:
@@ -584,16 +600,16 @@ for i in range(6):
         number += 1
 
 inputBt = tk.Button(root, text="1. Select Input", bg="Grey", command=selectIn, width=16)
-inputBt.grid(column=16, row=15, rowspan=2)
+inputBt.grid(column=16, row=17, rowspan=2)
 
 confirmSchedule = tk.Button(root, text="2. Confirm Schedule", bg="Grey", command=lambda: confirmSched(btn), width=16)
-confirmSchedule.grid(column=16, row=17, rowspan=2)
+confirmSchedule.grid(column=16, row=19, rowspan=2)
 
 outputBt = tk.Button(root, text="3. Generate Output", bg="Grey", command=genOutput, width=16)
-outputBt.grid(column=16, row=19, rowspan=2)
+outputBt.grid(column=16, row=21, rowspan=2)
 
 quitBt = tk.Button(root, text="4. Exit", bg="Grey", command=exit, width=16)
-quitBt.grid(column=16, row=21, rowspan=2)
+quitBt.grid(column=16, row=23, rowspan=2)
 
 # testBt = tk.Button(root, text="5. Text", bg="Grey", command=lambda: createExcel("This is the test title", dfTotals),
 #                    width=16)
