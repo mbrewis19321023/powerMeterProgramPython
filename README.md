@@ -44,7 +44,6 @@ Features added:
 - This version is complete with the Net metering functionality
 
 ## Notes as of 23-03-2025
-
 External libraries are required for this program to work. To install them type the following in the terminal/powershell:
 
 1. pip install numpy
